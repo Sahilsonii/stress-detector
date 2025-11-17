@@ -64,23 +64,8 @@ This project introduces a multimodal AI framework for **non-invasive, real-time 
 
 ## 🏗️ Model Architectures
 
-### ⭐ MobileNetV2 (Best Performing)
-**Layers:**
-- MobileNetV2 base (ImageNet weights)  
-- GAP → Dense(256) + BN + Dropout(0.5)  
-- Dense(128) + BN + Dropout(0.3)  
-- Output Softmax (2 classes)
+### ⭐ ResNetV2 (Best Performing)
 
-**Performance:**
-- Accuracy: **84.79%**  
-- Precision: 0.9446  
-- Recall: 0.8361  
-- F1-Score: 0.8870  
-- AUC-ROC: 0.9357  
-- Model Size: 14 MB  
-- Speed: **28 FPS (CPU)**
-
----
 
 ### ⭐ Random Forest (Keystroke)
 ```
