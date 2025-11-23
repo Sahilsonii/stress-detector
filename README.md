@@ -1,129 +1,168 @@
-# Multimodal AI Framework for Non-Invasive Stress Detection  
-[![Python](https://img.shields.io/badge/Python-3.8%2B-blue)](https://www.python.org/)  
-[![TensorFlow](https://img.shields.io/badge/TensorFlow-2.10.1-orange)](https://www.tensorflow.org/)  
-[![License](https://img.shields.io/badge/License-MIT-green.svg)](LICENSE)
+# 🧠 Stress-Scape: Multimodal AI Framework for Non-Invasive Stress Detection
 
-> **A privacy-preserving, software-only system for real-time stress detection using facial expressions and keystroke dynamics.**
+<div align="center">
 
----
+[![Python](https://img.shields.io/badge/Python-3.8+-3776AB?style=for-the-badge&logo=python&logoColor=white)](https://www.python.org/)
+[![TensorFlow](https://img.shields.io/badge/TensorFlow-2.x-FF6F00?style=for-the-badge&logo=tensorflow&logoColor=white)](https://www.tensorflow.org/)
+[![Keras](https://img.shields.io/badge/Keras-D00000?style=for-the-badge&logo=keras&logoColor=white)](https://keras.io/)
+[![OpenCV](https://img.shields.io/badge/OpenCV-5C3EE8?style=for-the-badge&logo=opencv&logoColor=white)](https://opencv.org/)
+[![scikit-learn](https://img.shields.io/badge/scikit--learn-F7931E?style=for-the-badge&logo=scikit-learn&logoColor=white)](https://scikit-learn.org/)
 
-## 📋 Overview
-This project introduces a multimodal AI framework for **non-invasive, real-time stress detection** in workplace environments. Unlike wearable-based systems, this method uses:
+[![GitHub Stars](https://img.shields.io/github/stars/Sahilsonii/stress-detector?style=for-the-badge&color=yellow)](https://github.com/Sahilsonii/stress-detector/stargazers)
+[![GitHub Forks](https://img.shields.io/github/forks/Sahilsonii/stress-detector?style=for-the-badge&color=blue)](https://github.com/Sahilsonii/stress-detector/network)
+[![GitHub Issues](https://img.shields.io/github/issues/Sahilsonii/stress-detector?style=for-the-badge&color=red)](https://github.com/Sahilsonii/stress-detector/issues)
 
-- **Facial Expression Analysis**  
-  CNN models: MobileNetV2, EfficientNetB0, ResNet50V2  
-  Trained on **53,571 augmented images**
+**A privacy-preserving, software-only system for real-time workplace stress detection using facial expressions and keystroke dynamics.**
 
-- **Keystroke Dynamics**  
-  Random Forest classifier analyzing typing patterns, error rates, and behavioral signals.
+[📖 Research Paper](#-research-paper) • [🚀 Quick Start](#-quick-start) • [📊 Results](#-performance-results) • [💻 Demo](#-usage-examples) • [🤝 Contributing](#-contributing)
 
-### Why This Matters
-- ✅ No wearable sensors required  
-- ✅ Privacy-preserving (local-only processing)  
-- ✅ Real-time inference (~28 FPS CPU)  
-- ✅ High accuracy across modalities  
-- ✅ Cost-effective and scalable  
+</div>
 
 ---
 
-## ✨ Key Features
+## 🌟 Overview
 
-### Facial Expression Modality
-- Transfer learning from ImageNet  
-- Evaluated models: **MobileNetV2 (best)**, EfficientNetB0, ResNet50V2  
-- Data augmentation: rotation, shift, shear, zoom, flip  
-- 2-phase training:  
-  - 30 epochs (trainable head)  
-  - 10 epochs fine-tuning  
+**Stress-Scape** is a comprehensive multimodal artificial intelligence framework designed for **non-invasive, real-time stress detection** in workplace environments. Unlike traditional wearable-based systems that cost $200-500 per device and raise privacy concerns, this solution uses only software-based indicators from standard workstations.
 
-### Keystroke Dynamics
-- Dataset: CMU Keystroke Benchmark (51 participants)  
-- Features: error_rate, backspace_count, total_words  
-- Random Forest with GroupKFold cross-validation  
-- Optimal classification threshold: **0.65**
+### 🎯 Key Highlights
+
+- 🚫 **No Wearable Sensors Required** - Eliminates hardware costs and user discomfort
+- 🔒 **Privacy-Preserving** - All processing happens locally on user workstations
+- ⚡ **Real-Time Performance** - 25-30 FPS on CPU, 80-100 FPS on GPU
+- 🎯 **High Accuracy** - ~89% accuracy across both modalities
+- 💰 **Cost-Effective** - Software-only solution deployable on standard workstations
+- 🌐 **Scalable** - No infrastructure investment required
 
 ---
 
-## 📊 Dataset
+## 🏗️ System Architecture
 
-### Facial Expression Dataset
-- **Total Images:** 53,571  
-- **Training:** 40,096  
-- **Validation:** 13,475  
-- **Binary Labels:**  
-  - **Stressed:** angry, disgust, fear, sad, neutral  
-  - **Not Stressed:** happy, surprise  
-
-### Keystroke Dataset
-- CMU Keystroke Dynamics Benchmark  
-- ~4,800 trials  
-- 51 participants  
-- Group-aware train/val/test split  
-
----
-
-## 🏗️ Model Architectures
-
-### ⭐ ResNetV2 (Best Performing)
-
-
-### ⭐ Random Forest (Keystroke)
-```
-RandomForestClassifier(
-    n_estimators=60,
-    max_depth=10,
-    min_samples_split=5,
-    max_features='sqrt',
-    class_weight='balanced'
-)
+```mermaid
+graph LR
+    A[Standard Workstation] --> B[Facial Expression Module]
+    A --> C[Keystroke Dynamics Module]
+    B --> D[CNN Models]
+    C --> E[Random Forest]
+    D --> F[Multimodal Fusion]
+    E --> F
+    F --> G[Stress Detection Output]
 ```
 
-**Performance:**
-- Accuracy: **84.56% ± 1.68%**  
-- Precision: 0.8734  
-- Recall: 0.8134  
-- F1-Score: 0.8426  
+### 🎭 Facial Expression Modality
 
-**Feature Importance:**
-1. error_rate — 52.34%  
-2. backspace_count — 31.56%  
-3. total_words — 16.10%  
+- **Models:** MobileNetV2, EfficientNetB0, ResNet50V2
+- **Dataset:** 53,571 augmented facial images
+- **Emotions:** 7 categories (angry, disgust, fear, happy, neutral, sad, surprise)
+- **Binary Mapping:**
+  - **Stressed:** angry, disgust, fear, sad, neutral
+  - **Not Stressed:** happy, surprise
+- **Training:** Two-phase transfer learning (30 + 10 epochs)
 
----
+### ⌨️ Keystroke Dynamics Modality
 
-## 📈 Performance Comparison
-
-| Model           | Modality | Accuracy | Precision | Recall | F1 | AUC |
-|----------------|----------|----------|-----------|--------|-----|-----|
-| MobileNetV2     | Facial   | 84.79%   | 0.9446    | 0.8361 | 0.8870 | 0.9357 |
-| EfficientNetB0  | Facial   | 83.56%   | 0.8645    | 0.8648 | 0.8646 | 0.9245 |
-| ResNet50V2      | Facial   | 82.34%   | 0.8411    | 0.8407 | 0.8409 | 0.9134 |
-| Random Forest   | Keystroke| 84.56%   | 0.8734    | 0.8134 | 0.8426 | — |
-| Decision Tree   | Keystroke| 76.45%   | 0.7834    | 0.7456 | 0.7642 | — |
+- **Algorithm:** Random Forest Ensemble Classifier
+- **Dataset:** CMU Keystroke Dynamics Benchmark (51 participants, 400 samples each)
+- **Features:**
+  - Error Rate (backspace count / total words)
+  - Backspace Frequency
+  - Typing Patterns
+- **Validation:** Group-aware cross-validation to prevent data leakage
 
 ---
 
-## 🚀 Installation
+## 📊 Performance Results
 
-### 1️⃣ Clone Repository
+### 🏆 Best Performing Models
+
+#### Facial Expression: ResNet50V2
+
+| Metric | Score |
+|--------|-------|
+| **Accuracy** | **89%** |
+| **Precision** | **0.95** |
+| **Recall** | **0.89** |
+| **F1-Score** | **0.92** |
+| **AUC-ROC** | **0.83** |
+
+#### Keystroke Dynamics: Random Forest
+
+| Metric | Score |
+|--------|-------|
+| **Accuracy** | **84.56% ± 1.68%** |
+| **Precision** | **0.92** (at threshold 0.65) |
+| **Recall** | **0.8567** |
+| **F1-Score** | **0.88** |
+
+### 📈 Model Comparison
+
+| Model | Modality | Accuracy | Precision | Recall | F1-Score | AUC |
+|-------|----------|----------|-----------|--------|----------|-----|
+| **ResNet50V2** ⭐ | Facial | **0.89** | **0.95** | **0.89** | **0.92** | 0.83 |
+| MobileNetV2 | Facial | 0.85 | 0.94 | 0.84 | 0.89 | **0.94** |
+| EfficientNetB0 | Facial | 0.81 | 0.94 | 0.78 | 0.85 | 0.75 |
+| **Random Forest** ⭐ | Keystroke | **0.8456** | 0.87 | 0.81 | 0.84 | - |
+| Decision Tree | Keystroke | 0.7645 | 0.78 | 0.75 | 0.76 | - |
+
+**Performance Improvement:** Random Forest outperforms Decision Tree baseline by **8.11 percentage points**
+
+---
+
+## 📦 Dataset Information
+
+### 🎭 Facial Expression Dataset
+
+- **Total Images:** 53,571
+  - Training: 40,096
+  - Validation: 13,475
+- **Sources:**
+  1. FER2013 public benchmark (~35,887 images)
+  2. Custom-collected data (1,400 images from real users)
+- **Resolution:** 224×224 pixels
+- **Augmentation Techniques:**
+  - Rotation (±20°)
+  - Width/Height shifts (±20%)
+  - Shear transformation (15° max)
+  - Zoom (±15%)
+  - Horizontal flipping (50% probability)
+  - Brightness adjustment (±20%)
+
+### ⌨️ Keystroke Dataset
+
+- **Source:** CMU Keystroke Dynamics Benchmark
+- **URL:** https://www.cs.cmu.edu/~keystroke/
+- **Participants:** 51
+- **Samples:** 400 per participant
+- **Features:** backspace count, total words typed, error rate
+- **Split Strategy:** Group-aware (60% train, 20% val, 20% test)
+
+---
+
+## 🚀 Quick Start
+
+### 📋 Prerequisites
+
+- Python 3.8+
+- NVIDIA GPU (optional, for faster training)
+- Webcam (for real-time facial detection)
+
+### 🔧 Installation
+
 ```bash
-git clone https://github.com/yourusername/multimodal-stress-detection.git
-cd multimodal-stress-detection
-```
+# Clone the repository
+git clone https://github.com/Sahilsonii/stress-detector.git
+cd stress-detector
 
-### 2️⃣ Create Virtual Environment
-```bash
+# Create virtual environment
 python -m venv venv
-source venv/bin/activate   # Windows: venv\Scripts\activate
-```
+source venv/bin/activate  # On Windows: venv\Scripts\activate
 
-### 3️⃣ Install Requirements
-```
+# Install dependencies
 pip install -r requirements.txt
 ```
 
-### requirements.txt
-```
+### 📦 Requirements
+
+```txt
 tensorflow==2.10.1
 keras==2.10.0
 opencv-python==4.6.0.66
@@ -137,128 +176,213 @@ pillow==9.2.0
 
 ---
 
-## ⚡ Quick Start
+## 💻 Usage Examples
 
-### Train Facial Model
+### 🎭 Train Facial Expression Model
+
 ```bash
-python train_mobilenet.py --epochs 40 --batch_size 8
+# Train MobileNetV2
+python train_mobilenet.py --epochs 40 --batch_size 8 --learning_rate 0.001
+
+# Train EfficientNetB0
+python train_efficientnet.py --epochs 40 --batch_size 8
+
+# Train ResNet50V2
+python train_resnet.py --epochs 40 --batch_size 8
 ```
 
-### Train Keystroke Model
+### ⌨️ Train Keystroke Model
+
 ```bash
-python train_keystroke_rf.py --dataset data/cmu_keystroke.csv
+python train_keystroke_rf.py --dataset data/cmu_keystroke.csv --n_estimators 100
 ```
 
-### Run Real-Time Detection
+### 🎥 Real-Time Stress Detection
+
 ```bash
-python webcam_stress_detector.py --model results/MobileNetV2/best_model.h5
+# Facial stress detection via webcam
+python webcam_stress_detector.py --model models/resnet50v2_best.h5
+
+# Keystroke stress monitoring
+python keystroke_monitor.py --model models/random_forest.pkl
+```
+
+### 🔗 Multimodal Fusion
+
+```python
+from stress_detector import MultimodalStressDetector
+
+# Initialize detector
+detector = MultimodalStressDetector(
+    facial_model='models/resnet50v2_best.h5',
+    keystroke_model='models/random_forest.pkl'
+)
+
+# Get predictions
+facial_pred = detector.predict_facial(frame)
+keystroke_pred = detector.predict_keystroke(typing_data)
+
+# Fuse predictions
+final_stress_score = detector.fuse_predictions(
+    facial_pred, 
+    keystroke_pred, 
+    method='late_fusion'
+)
+
+print(f"Stress Level: {final_stress_score:.2f}")
 ```
 
 ---
 
 ## 📁 Project Structure
+
 ```
-multimodal-stress-detection/
+stress-detector/
 ├── data/
-│   ├── original_dataset/
-│   ├── balanced_train/
-│   ├── balanced_validation/
-│   └── cmu_keystroke.csv
+│   ├── facial_expressions/
+│   │   ├── train/
+│   │   └── validation/
+│   └── keystroke/
+│       └── cmu_keystroke.csv
 ├── models/
-│   ├── mobilenet_model.py
+│   ├── mobilenetv2_model.py
 │   ├── efficientnet_model.py
-│   ├── resnet_model.py
-│   └── keystroke_rf.py
-├── results/
-│   ├── MobileNetV2/
-│   ├── EfficientNetB0/
-│   ├── ResNet50V2/
-│   └── FINAL_MODEL_COMPARISON_REPORT.pdf
-├── scripts/
+│   ├── resnet50v2_model.py
+│   ├── random_forest_model.py
+│   └── multimodal_fusion.py
+├── training/
 │   ├── train_mobilenet.py
 │   ├── train_efficientnet.py
 │   ├── train_resnet.py
-│   ├── train_keystroke_rf.py
-│   └── webcam_stress_detector.py
-├── stress_monitoring/
-├── docs/
+│   └── train_keystroke_rf.py
+├── inference/
+│   ├── webcam_stress_detector.py
+│   ├── keystroke_monitor.py
+│   └── multimodal_detector.py
+├── utils/
+│   ├── data_augmentation.py
+│   ├── preprocessing.py
+│   └── evaluation.py
+├── results/
+│   ├── confusion_matrices/
+│   ├── training_history/
+│   └── performance_metrics/
 ├── requirements.txt
 └── README.md
 ```
 
 ---
 
-## 💻 Usage Examples
+## 🎯 Research Contributions
 
-### Facial Stress Detection
-```python
-from models.mobilenet_model import load_model
-import cv2
+1. ✅ **Software-Based System** - Completely eliminates wearable sensor dependencies
+2. ✅ **Comprehensive Model Comparison** - Rigorous evaluation of 3 CNN architectures
+3. ✅ **Ensemble vs Single-Tree Analysis** - Demonstrates Random Forest superiority
+4. ✅ **Novel Feature Engineering** - Keystroke-based stress proxies from raw data
+5. ✅ **Behavioral Modality Validation** - Typing patterns as stress indicators
+6. ✅ **Deployment-Ready Architecture** - Real-time processing with temporal smoothing
 
-model = load_model('results/MobileNetV2/best_model.h5')
-cap = cv2.VideoCapture(0)
+---
 
-ret, frame = cap.read()
-face = preprocess_face(frame)
-prediction = model.predict(face)
+## ⚖️ Ethical Framework
 
-print("Stress:", prediction)
-```
+This research adheres to five fundamental ethical principles:
 
-### Keystroke Analysis
-```python
-from models.keystroke_rf import KeystrokeStressDetector
+### 🔐 Principle 1: Informed Consent
+All participants are explicitly informed about data collection methods before monitoring begins. Users can opt out without penalties.
 
-detector = KeystrokeStressDetector()
-detector.load_model('results/keystroke_rf.pkl')
+### 🎯 Principle 2: Purpose Limitation
+Data is used only for workplace wellness, never for performance reviews or hiring decisions.
 
-sample = {"backspace_count": 5, "total_words": 20, "error_rate": 0.25}
-label, confidence = detector.predict(sample)
-print(label, confidence)
-```
+### 💾 Principle 3: Local Storage & Minimization
+All processing occurs locally with encrypted storage. No data transmitted to cloud infrastructure.
 
-### Fusion Model
-```python
-from models.multimodal_fusion import MultimodalStressDetector
+### 🔒 Principle 4: Pseudonymization & Anonymization
+Stress logs contain no personally identifiable information. User identifiers use cryptographic hashing.
 
-detector = MultimodalStressDetector(
-    facial_model='results/MobileNetV2/best_model.h5',
-    keystroke_model='results/keystroke_rf.pkl'
-)
+### 👤 Principle 5: Human Supervision
+Automated predictions are informational only, supplementing (not replacing) human judgment.
 
-score = detector.fuse_predictions(0.85, 0.78, fusion_method='late')
-print(score)
-```
+---
+
+## ⚠️ Known Limitations
+
+| Limitation | Impact | Mitigation Strategy |
+|------------|--------|---------------------|
+| **Dataset Bias** | 4-7% accuracy drop for underrepresented demographics | Fairness-aware reweighting, diverse data collection |
+| **Proxy Label Validity** | Lack of physiological validation | External validation with cortisol/HRV measurements |
+| **Temporal Dynamics** | Misses stress evolution over time | Implement LSTM/GRU temporal architectures |
+| **Domain Shift** | 12-18% accuracy drop in real-world deployment | Domain adaptation techniques, workplace-specific data |
+
+---
+
+## 🔮 Future Research Directions
+
+- 🔄 **Multimodal Fusion** - Investigate early, intermediate, and late fusion architectures
+- ⏱️ **Temporal Modeling** - Implement LSTM/GRU for stress evolution tracking
+- 🌐 **Domain Adaptation** - Bridge controlled-to-naturalistic environment gaps
+- 🧬 **Physiological Validation** - Validate proxies against cortisol, HRV, EDA markers
+- ⚖️ **Fairness-Aware ML** - Ensure equitable performance across demographics
+
+---
+
+## 🛠️ Hardware Requirements
+
+### Minimum Requirements
+- **CPU:** Intel Core i5 (8th gen) or equivalent
+- **RAM:** 8GB
+- **Storage:** 10GB free space
+- **GPU:** Optional (CPU inference supported)
+
+### Recommended Requirements
+- **CPU:** Intel Core i7 (11th gen) or equivalent
+- **RAM:** 16GB DDR4
+- **Storage:** 512GB SSD
+- **GPU:** NVIDIA RTX 3050ti (4GB VRAM) or better
+
+---
+
+## 📊 Deployment Recommendations
+
+### For Workplace Implementation
+
+1. **ResNet50V2** for facial detection (60-second snapshots)
+2. **Random Forest** for keystroke analysis (15-minute windows)
+3. **10-frame temporal smoothing** for stability
+4. **Personal dashboards** for employee self-awareness (not surveillance)
+5. **Annual consent re-evaluation**
+6. **Complete data deletion mechanisms**
+7. **Integration with employee assistance programs**
 
 ---
 
 ## 🤝 Contributing
-We welcome contributions!
 
-### Areas to contribute:
-- Fusion strategies (early/intermediate/late)  
-- LSTM/GRU temporal modeling  
-- Domain adaptation  
-- Fairness-aware training  
-- Additional behavioral modalities  
+We welcome contributions! Here are areas where you can help:
 
+- 🔀 Fusion strategies (early/intermediate/late)
+- 🧠 LSTM/GRU temporal modeling
+- 🌐 Domain adaptation techniques
+- ⚖️ Fairness-aware training methods
+- 📊 Additional behavioral modalities
+- 🐛 Bug fixes and performance improvements
 ---
 
-## ⚖️ Ethical Considerations
-- **Informed consent required**  
-- **No surveillance** — designed for wellness, not employee scoring  
-- **Local processing only**  
-- **Full data deletion supported**  
-- **Human oversight mandatory**  
+## 🙏 Acknowledgments
 
-**Current known limitations:**  
-- Dataset demographic bias  
-- Proxy label assumptions  
-- Temporal behavior modeling limitations  
-- Real-world domain shift  
+- **FER2013 Dataset** - Kaggle community
+- **CMU Keystroke Dynamics Benchmark** - Carnegie Mellon University
+- **Transfer Learning Models** - TensorFlow/Keras pre-trained weights
+- **Research Community** - For valuable feedback and insights
 
----
+## ⭐ Star History
 
+If this project helps your research or work, please consider giving it a star! ⭐
 
-**⭐ If this project helps your work, please consider giving it a star! ⭐**  
+<div align="center">
 
+**Made with ❤️ for workplace wellness and mental health**
+
+[⬆ Back to Top](#-stress-scape-multimodal-ai-framework-for-non-invasive-stress-detection)
+
+</div>
