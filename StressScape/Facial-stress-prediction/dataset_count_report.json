@@ -1,0 +1,53 @@
+{
+    "original": {
+        "train": {
+            "angry": 4153,
+            "disgust": 578,
+            "fear": 4254,
+            "happy": 5728,
+            "neutral": 5141,
+            "sad": 5094,
+            "surprise": 3352
+        },
+        "train_total": 28300,
+        "validation": {
+            "angry": 996,
+            "disgust": 151,
+            "fear": 1047,
+            "happy": 1925,
+            "neutral": 1255,
+            "sad": 1240,
+            "surprise": 817
+        },
+        "validation_total": 7431,
+        "total": 35731
+    },
+    "balanced": {
+        "train": {
+            "angry": 5728,
+            "disgust": 5728,
+            "fear": 5728,
+            "happy": 5728,
+            "neutral": 5728,
+            "sad": 5728,
+            "surprise": 5728
+        },
+        "train_total": 40096,
+        "validation": {
+            "angry": 1925,
+            "disgust": 1925,
+            "fear": 1925,
+            "happy": 1925,
+            "neutral": 1925,
+            "sad": 1925,
+            "surprise": 1925
+        },
+        "validation_total": 13475,
+        "total": 53571
+    },
+    "augmented": {
+        "train": 11796,
+        "validation": 6044,
+        "total": 17840
+    }
+}

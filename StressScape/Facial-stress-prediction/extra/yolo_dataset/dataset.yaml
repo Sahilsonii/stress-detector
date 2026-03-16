@@ -1,0 +1,6 @@
+names:
+  0: Not_Stressed
+  1: Stressed
+path: c:\Users\asus\Desktop\strress prediction prjoecr\yolo_dataset
+train: images/train
+val: images/val
