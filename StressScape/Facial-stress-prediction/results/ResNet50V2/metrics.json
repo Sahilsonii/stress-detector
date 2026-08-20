@@ -1,0 +1,13 @@
+{
+    "best_val_accuracy": 0.8864158987998962,
+    "final_val_accuracy": 0.8864158987998962,
+    "final_val_loss": 0.2942236661911011,
+    "final_val_auc": 0.8261021971702576,
+    "calculated_accuracy": 0.8864159062244974,
+    "calculated_precision": 0.9483713715931753,
+    "calculated_recall": 0.8893506493506493,
+    "calculated_f1_score": 0.917913248619377,
+    "total_epochs": 39,
+    "stressed_samples": 9625,
+    "not_stressed_samples": 3854
+}

@@ -6,6 +6,7 @@ __pycache__/
 .Python
 env/
 venv/
+.venv*/
 *.egg-info/
 dist/
 build/
@@ -15,28 +16,45 @@ original dataset/
 dataset/
 balanced_train/
 balanced_validation/
+data/
 
-# Models
+# Model weights / heavy training artifacts -- kept out of git everywhere.
+# Small evidence files (metrics/reports/figures) are explicitly
+# un-ignored below so Data Availability claims stay verifiable.
 *.h5
 *.pkl
 *.pth
+results/**/checkpoints/
+results/**/saved_model/
 
-# Results
-results/
+# Monitoring logs / personal captures -- never tracked.
 logs/
 stress_monitoring/
 
-# Images
+# Images (ignore by default; keep result evidence figures)
 *.jpg
 *.jpeg
-*.png
 *.gif
+*.png
+!results/**/confusion_matrix*.png
+!results/**/*_history.png
+!results/**/feature_importance.png
+!results/**/threshold_optimization.png
+!results/comparison/*.png
 
-# Reports
+# Reports (ignore by default; keep the regenerated comparison PDF)
 *.pdf
+!results/FINAL_MODEL_COMPARISON_REPORT.pdf
 
-# CSV
+# CSV -- raw datasets and personal session logs stay ignored
 *.csv
+
+# Evidence JSON/TXT under results/ -- kept for reproducibility
+!results/**/metrics.json
+!results/**/classification_report.txt
+!results/**/feature_statistics.json
+!results/**/split_summary.json
+!results/**/threshold_table.json
 
 # Jupyter
 .ipynb_checkpoints/
