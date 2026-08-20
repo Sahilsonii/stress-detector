@@ -2,3 +2,10 @@ Editor Comments and Reviewer comments.docx
 P2P_Reviewers_Response.docx
 Review_MD_A Multi-Model AI Framework for Non-Invasive Stress Detection Using Multimodal Behavioural and Facial Indicators.pdf
 Stressscape___sahil_soni.pdf
+
+# Assembled/packaged outputs - reproducible from the build_*.py scripts
+overleaf_submission/
+*.zip
+*.rar
+# Word lock files
+~$*
