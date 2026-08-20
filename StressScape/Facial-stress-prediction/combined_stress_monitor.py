@@ -22,7 +22,7 @@ BASE_DIR = Path(__file__).resolve().parent
 
 # Use the full saved model, not just weights
 FACIAL_MODEL_PATH = BASE_DIR / "results" / "ResNet50V2" / "saved_model"
-TYPING_MODEL_PATH = BASE_DIR.parent.parent / "error_rate" / "StressScape" / "stress_detector.pkl"
+TYPING_MODEL_PATH = BASE_DIR / "results" / "Keystroke" / "random_forest_model.pkl"
 FUSION_MODEL_PATH = BASE_DIR / "fusion_model.pkl"   # optional trained fusion classifier
 IMG_SIZE = (224, 224)  # ResNet expects 224x224
 
@@ -168,13 +168,12 @@ class FacialStressDetector(threading.Thread):
 class CombinedStressUI:
     def __init__(self, alpha=DEFAULT_ALPHA):
         print("⌨️ Loading typing model...")
-        self.typing_model = joblib.load(TYPING_MODEL_PATH)
-
-        print("🔍 DEBUG: Typing model loaded:", type(self.typing_model))
-        if hasattr(self.typing_model, "predict_proba"):
-            print("     ✔ Supports predict_proba()")
+        if TYPING_MODEL_PATH.exists():
+            self.typing_model = joblib.load(TYPING_MODEL_PATH)
+            print("🔍 DEBUG: Typing model loaded:", type(self.typing_model))
         else:
-            print("     ⚠ No predict_proba(); using hard labels.")
+            self.typing_model = None
+            print(f"⚠️ No typing model at {TYPING_MODEL_PATH} -- run train_keystroke_rf.py first. Typing modality disabled; facial-only fusion.")
 
         self.fusion_model = load_fusion_model()
 
@@ -184,6 +183,8 @@ class CombinedStressUI:
         self.alpha = alpha
         self.text_buffer = ""
         self.backspaces = 0
+        self._key_down_times = {}
+        self._key_events = []  # (down_ts, up_ts) pairs, for hold/flight/duration features
 
         # UI
         self.root = Tk()
@@ -198,7 +199,8 @@ class CombinedStressUI:
                                fg="white", insertbackground="white",
                                font=("Arial", 14), wrap=WORD)
         self.typing_box.pack(pady=15)
-        self.typing_box.bind("<Key>", self.on_keypress)
+        self.typing_box.bind("<KeyPress>", self.on_keypress)
+        self.typing_box.bind("<KeyRelease>", self.on_keyrelease)
 
         self.typing_label = Label(self.root, font=("Arial", 14, "bold"),
                                   bg="#121212", fg="#bbbbbb")
@@ -224,6 +226,12 @@ class CombinedStressUI:
                 self.text_buffer = self.text_buffer[:-1]
         elif char and char.isprintable():
             self.text_buffer += char
+        self._key_down_times[event.keysym] = time.time()
+
+    def on_keyrelease(self, event):
+        down_ts = self._key_down_times.pop(event.keysym, None)
+        if down_ts is not None:
+            self._key_events.append((down_ts, time.time()))
 
     def calculate_error_rate(self):
         words = len(self.text_buffer.split())
@@ -231,18 +239,30 @@ class CombinedStressUI:
         print(f"🧮 DEBUG: error_rate={err:.4f}, words={words}, backspaces={self.backspaces}")
         return err
 
+    def extract_typing_features(self):
+        """Same hold/flight/duration schema train_keystroke_rf.py was trained
+        on -- see keystroke_features.py. Returns None if too few keys typed
+        since the last update to compute meaningful statistics."""
+        events = sorted(self._key_events, key=lambda e: e[0])
+        if len(events) < 2:
+            return None
+        holds = np.array([up - down for down, up in events])
+        flights = np.array([events[i][0] - events[i - 1][1] for i in range(1, len(events))])
+        dd = np.array([events[i][0] - events[i - 1][0] for i in range(1, len(events))])
+        return np.array([[holds.mean(), holds.std(), flights.mean(), flights.std(), float(dd.sum())]])
+
     # -------------------------------------
 
     def update_stress(self):
         error_rate = self.calculate_error_rate()
-        X = np.array([[error_rate]])
 
-        if hasattr(self.typing_model, "predict_proba"):
-            typing_probs = self.typing_model.predict_proba(X)[0]
-            typing_p = typing_probs[1]
-        else:
-            pred = self.typing_model.predict(X)[0]
-            typing_p = 1.0 if pred == 1 else 0.0
+        typing_p = None
+        if self.typing_model is not None:
+            X = self.extract_typing_features()
+            if X is not None:
+                typing_p = float(self.typing_model.predict_proba(X)[0][1])
+        if typing_p is None:
+            typing_p = 0.0  # no typing signal yet this cycle -- facial modality carries the estimate
 
         facial_p = float(self.facial_detector.last_probs[1])
 

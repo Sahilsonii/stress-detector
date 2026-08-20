@@ -22,5 +22,9 @@ reportlab>=3.6.0
 # Image Processing
 Pillow>=9.3.0
 
+# Keystroke dynamics: model persistence + live global keyboard capture
+joblib>=1.2.0
+pynput>=1.7.6
+
 # Optional: GPU Support (uncomment if using NVIDIA GPU)
 # tensorflow-gpu>=2.10.0

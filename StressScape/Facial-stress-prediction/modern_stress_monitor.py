@@ -14,10 +14,12 @@ import pickle
 import warnings
 warnings.filterwarnings("ignore")
 
+from keystroke_features import LiveKeystrokeTimer
+
 # CONFIG
 BASE_DIR = Path(__file__).resolve().parent
 FACIAL_MODEL_PATH = BASE_DIR / "results" / "ResNet50V2" / "saved_model"
-TYPING_MODEL_PATH = BASE_DIR.parent.parent / "error_rate" / "StressScape" / "stress_detector.pkl"
+TYPING_MODEL_PATH = BASE_DIR / "results" / "Keystroke" / "random_forest_model.pkl"
 IMG_SIZE = (224, 224)  # ResNet expects 224x224
 SMOOTHING_WINDOW = 8
 UPDATE_INTERVAL = 5000  # 5 seconds
@@ -141,10 +143,16 @@ class FacialStressDetector(threading.Thread):
 class ModernStressUI:
     def __init__(self):
         print("⌨️ Loading typing model...")
-        self.typing_model = joblib.load(TYPING_MODEL_PATH)
-        
+        if TYPING_MODEL_PATH.exists():
+            self.typing_model = joblib.load(TYPING_MODEL_PATH)
+        else:
+            self.typing_model = None
+            print(f"⚠️ No typing model at {TYPING_MODEL_PATH} -- run train_keystroke_rf.py first. Typing modality disabled; facial-only fusion.")
+
         self.keyboard_monitor = GlobalKeyboardMonitor()
         self.keyboard_monitor.start()
+        self.keystroke_timer = LiveKeystrokeTimer()
+        self.keystroke_timer.start()
         
         self.facial_detector = FacialStressDetector()
         self.facial_detector.start()
@@ -276,16 +284,14 @@ class ModernStressUI:
         self.facial_conf.config(text=f"Confidence: {self.facial_detector.confidence:.1f}%")
         self.facial_prob['value'] = facial_prob * 100
         
-        # Typing
+        # Typing -- error_rate still shown as a raw stat, but the model itself now
+        # takes the hold/flight/duration timing features it was trained on.
         error_rate = self.keyboard_monitor.get_error_rate()
-        input_arr = np.array([[error_rate]])
-        
-        if hasattr(self.typing_model, "predict_proba"):
-            typing_probs = self.typing_model.predict_proba(input_arr)[0]
-            typing_prob = float(typing_probs[1])
-        else:
-            typing_pred = int(self.typing_model.predict(input_arr)[0])
-            typing_prob = 1.0 if typing_pred == 1 else 0.0
+        typing_prob = 0.0
+        if self.typing_model is not None:
+            feats = self.keystroke_timer.extract_features()
+            if feats is not None:
+                typing_prob = float(self.typing_model.predict_proba(feats)[0][1])
         
         typing_stressed = typing_prob > 0.5
         self.typing_status.config(
@@ -323,6 +329,7 @@ class ModernStressUI:
     
     def on_close(self):
         self.keyboard_monitor.stop()
+        self.keystroke_timer.stop()
         self.facial_detector.stop()
         self.root.destroy()
 
