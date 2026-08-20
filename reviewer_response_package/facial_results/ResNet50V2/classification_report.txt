@@ -1,0 +1,16 @@
+ResNet50V2 Classification Report
+============================================================
+
+              precision    recall  f1-score   support
+
+Not Stressed       0.76      0.88      0.82      3854
+    Stressed       0.95      0.89      0.92      9625
+
+    accuracy                           0.89     13479
+   macro avg       0.85      0.88      0.87     13479
+weighted avg       0.89      0.89      0.89     13479
+
+
+Confusion Matrix:
+[[3388  466]
+ [1065 8560]]

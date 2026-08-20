@@ -1,0 +1,14 @@
+{
+  "train": {
+    "subjects": 31,
+    "samples": 12400
+  },
+  "val": {
+    "subjects": 10,
+    "samples": 4000
+  },
+  "test": {
+    "subjects": 10,
+    "samples": 4000
+  }
+}
