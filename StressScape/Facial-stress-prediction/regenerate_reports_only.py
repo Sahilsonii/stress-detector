@@ -21,6 +21,20 @@ RESULTS_DIR = Path(__file__).parent / "results"
 MODELS = ['MobileNetV2', 'EfficientNetB0', 'ResNet50V2']
 COLORS = {'MobileNetV2': '#FF6B6B', 'EfficientNetB0': '#4ECDC4', 'ResNet50V2': '#95E1D3'}
 
+
+def load_real_confusion_matrix(model):
+    """Parse the real confusion matrix out of classification_report.txt instead
+    of estimating it from precision/recall (which only approximates the true
+    counts and can disagree with the actual evaluation)."""
+    report_file = RESULTS_DIR / model / 'classification_report.txt'
+    text = report_file.read_text()
+    import re
+    m = re.search(r"\[\[\s*(\d+)\s+(\d+)\]\s*\n?\s*\[\s*(\d+)\s+(\d+)\]\]", text)
+    if not m:
+        raise ValueError(f"Could not find confusion matrix in {report_file}")
+    tn, fp, fn, tp = (int(x) for x in m.groups())
+    return np.array([[tn, fp], [fn, tp]])
+
 def create_comparison_visuals(all_metrics, comparison_dir):
     """Create all comparison visualizations"""
     print("📊 Creating comparison visualizations...")
@@ -87,18 +101,7 @@ def create_comparison_visuals(all_metrics, comparison_dir):
         axes = [axes]
     
     for idx, model in enumerate(models):
-        metrics = all_metrics[model]
-        stressed = metrics['stressed_samples']
-        not_stressed = metrics['not_stressed_samples']
-        precision = metrics['calculated_precision']
-        recall = metrics['calculated_recall']
-        accuracy = metrics['calculated_accuracy']
-        
-        tp = int(stressed * recall)
-        fn = stressed - tp
-        tn = int(not_stressed * accuracy)
-        fp = not_stressed - tn
-        cm = np.array([[tn, fp], [fn, tp]])
+        cm = load_real_confusion_matrix(model)
         
         sns.heatmap(cm, annot=True, fmt='d', cmap='Blues', ax=axes[idx],
                    xticklabels=['Not Stressed', 'Stressed'],
@@ -106,7 +109,7 @@ def create_comparison_visuals(all_metrics, comparison_dir):
                    cbar=True, square=True, linewidths=2, linecolor='white',
                    annot_kws={'fontsize': 14, 'fontweight': 'bold'})
         
-        axes[idx].set_title(f'{model}\nAccuracy: {accuracy:.3f}', fontsize=13, fontweight='bold', pad=15)
+        axes[idx].set_title(f'{model}\nAccuracy: {all_metrics[model]["calculated_accuracy"]:.3f}', fontsize=13, fontweight='bold', pad=15)
         axes[idx].set_ylabel('True Label', fontsize=11, fontweight='bold')
         axes[idx].set_xlabel('Predicted Label', fontsize=11, fontweight='bold')
     

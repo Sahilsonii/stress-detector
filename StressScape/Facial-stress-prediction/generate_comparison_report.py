@@ -20,6 +20,20 @@ sns.set_palette("husl")
 
 RESULTS_DIR = Path(__file__).parent / "results"
 MODELS = ['MobileNetV2', 'EfficientNetB0', 'ResNet50V2']
+
+
+def load_real_confusion_matrix(model):
+    """Parse the real confusion matrix out of classification_report.txt instead
+    of estimating it from precision/recall (which only approximates the true
+    counts and can disagree with the actual evaluation)."""
+    report_file = RESULTS_DIR / model / 'classification_report.txt'
+    text = report_file.read_text()
+    import re
+    m = re.search(r"\[\[\s*(\d+)\s+(\d+)\]\s*\n?\s*\[\s*(\d+)\s+(\d+)\]\]", text)
+    if not m:
+        raise ValueError(f"Could not find confusion matrix in {report_file}")
+    tn, fp, fn, tp = (int(x) for x in m.groups())
+    return np.array([[tn, fp], [fn, tp]])
 COLORS = {
     'MobileNetV2': '#FF6B6B',      # Coral Red
     'EfficientNetB0': '#4ECDC4',   # Turquoise
@@ -263,27 +277,7 @@ def collect_confusion_matrices(models_with_data):
             # Create simple CM visualization
             ax = axes[idx]
             
-            # Placeholder data (you should load actual CM data)
-            # For now, create a sample based on metrics
-            metrics_file = RESULTS_DIR / model / 'metrics.json'
-            with open(metrics_file, 'r') as f:
-                metrics = json.load(f)
-            
-            # Estimate confusion matrix from precision/recall
-            # This is approximate - ideally load actual CM
-            stressed = metrics['stressed_samples']
-            not_stressed = metrics['not_stressed_samples']
-            precision = metrics['calculated_precision']
-            recall = metrics['calculated_recall']
-            accuracy = metrics['calculated_accuracy']
-            
-            # Rough estimates
-            tp = int(stressed * recall)
-            fn = stressed - tp
-            tn = int(not_stressed * accuracy)
-            fp = not_stressed - tn
-            
-            cm = np.array([[tn, fp], [fn, tp]])
+            cm = load_real_confusion_matrix(model)
             
             sns.heatmap(cm, annot=True, fmt='d', cmap='Blues', ax=ax,
                        xticklabels=['Not Stressed', 'Stressed'],
