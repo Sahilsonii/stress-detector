@@ -1,0 +1,534 @@
+\documentclass[fleqn,10pt]{wlscirep}
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage{graphicx}
+\usepackage{amsmath}
+\usepackage{amssymb}
+\usepackage{booktabs}
+\usepackage{hyperref}
+\usepackage{multirow}
+\usepackage{textcomp}
+\usepackage{algorithm}
+\usepackage{algpseudocode}
+\usepackage{algorithmicx}
+\usepackage{textgreek}
+
+\usepackage{array}
+\usepackage{tabularx}
+\sloppy
+
+\title{A Multi-Model AI Framework for Non-Invasive Stress Detection Using Multimodal Behavioural and Facial Indicators}
+
+
+\author[1]{Sahil Soni}
+\author[1,*]{Zulfikar Ali Ansari}
+\author[1]{Wasim Khan}
+\author[2]{K.Kiran Kumar}
+\author[1]{Shreya Jagtap}
+\author[1]{Vishal Shah}
+\affil[1]{AIML Department, Symbiosis Institute of Technology, Symbiosis International (Deemed University), Lavale, Pune, Maharashtra-412115, India}
+\affil[2]{Department of Computer Science and Engineering,
+Koneru Lakshmaiah Education Foundation Vaddeswaram,Guntur, Andhra Pradesh, India.}
+
+\affil[*]{zulfikar.ansari@sitpune.edu.in}
+
+\begin{abstract}
+In the latest working strategy, workplace stress is a significant issue that impacts workers' health, productivity, and mental well-being over time. Wearable sensors, self-report surveys, and IoT-based physiological systems are among the current methods for tracking stress. However, they often encounter problems, such as high setup costs, user discomfort, concerns about data privacy, and a limited ability to detect real-time changes in stress. To handle these challenges, our study introduces Stress-Scape, a multimodal, software-only artificial intelligence framework that combines facial expression analysis with behavioural indicators derived from keystroke dynamics. The proposed system operates solely on standard computing devices, enabling non-intrusive, real-time stress assessment. We have utilised the facial component with three transfer learning architectures, such as MobileNetV2, EfficientNetB0, and ResNet50V2, trained on 53,571 augmented images from the FER2013 public benchmark dataset, categorised into binary stress classes. ResNet50V2 achieved the best results, with 89\% accuracy, 0.95 precision, and an AUC-ROC of 0.83. The behavioural component uses hold-time and flight-time typing-rhythm features derived from the CMU Keystroke Dynamics Benchmark dataset, modelled with a Random Forest (RF) classifier. Across 5-fold group-aware cross-validation, this model attains 78.78\% $\pm$ 2.52\% accuracy, and 73.65\% accuracy with 0.56 precision and 0.64 recall on a held-out subject-disjoint test set at its default decision threshold, outperforming a Decision Tree baseline (72.00\% accuracy) by 1.65 percentage points. Both modalities run in a real-time multimodal fusion pipeline at 25 to 30 FPS. The system features local inference, temporal smoothing, and privacy-preserving processing, enabling practical continuous monitoring without the need for physiological sensors. Finally, our study demonstrates that ambient behavioural cues and facial micro-expressions can serve as effective computational proxies for stress, offering a scalable, non-invasive approach for workplace wellness, cognitive load assessment, and future human–computer interaction systems.
+\end{abstract}
+
+
+\keywords{Stress Detection, Multimodal AI, Transfer Learning, Keystroke Dynamics, Facial Expression Recognition, Random Forest, CNN, ResNetV2, Affective Computing, Digital Well-being, Workplace Wellness}
+
+\begin{document}
+
+\flushbottom
+\maketitle
+
+
+\noindent\textbf{Keywords:} Stress Detection, Multimodal AI, Transfer Learning, Keystroke Dynamics, Facial Expression Recognition, Random Forest, CNN, ResNetV2, Affective Computing, Digital Well-being, Workplace Wellness
+
+\section*{Introduction}
+Nowadays, stress is a major concern in our human life as working employees. It makes people less effective, less mentally healthy, and puts more strain on organisations \cite{15rafi2022mental}. Approximations from international health agencies suggest that over 80\% of employees face ongoing workplace stress, leading to substantial economic and public health impacts impact \cite{16frank2023work}. With the quick shift to remote and hybrid work arrangements, stress signals have become more subtle, fluid, and harder to detect with traditional methods. Standard assessment techniques, such as self-report questionnaires, are subject to bias, delayed responses, and limited real-world relevance. Conversely, wearable sensor-based systems raise concerns about cost, discomfort, user compliance, and regulatory restrictions on the collection and use of personal physiological data \cite{17hidayah2022internal}. These challenges underscore the need for non-intrusive, affordable, and scalable solutions that facilitate ongoing stress monitoring in real-world settings.\\
+ \cite{18bruin2024detection} \cite{19kyrou2024deep}. Similarly, keystroke dynamics, which include the timing and structure of typing behaviour, have been linked to cognitive load, attentional shifts, and disruptions in motor planning under stress \cite{20shadman2025keystroke}. Although these two modalities have been studied separately, their integration remains largely unexplored, especially in the context of software-only systems that do not rely on physiological measure signals \cite{21ametefe2025advancements} \cite{22kao2025combined}. Current multimodal stress-detection frameworks primarily rely on wearable sensors, biometric devices, or laboratory datasets, resulting in a gap in practical, deployable solutions suitable for real-world occupational settings.\\
+Additionally, the recent study suffers from a systematic evaluation of ML architectures for behavioural stress detection, including the effects of class imbalance, threshold tuning, temporal smoothing, and cross-participant generalisation \cite{23paul2023parallelized}. Keystroke-based stress studies have primarily focused on authentication tasks rather than affective inference, and few works address the methodological challenges involved in creating generalizable models from diverse user typing patterns. Similarly, most facial-expression-based stress systems rely on continuous video monitoring, which raises privacy concerns and limits their practical use. These gaps emphasize the need for a multimodal framework that uses ambient, non-physiological indicators while maintaining privacy, interpretability, and real-time functionality processing.\\
+To address these challenges, we propose Stress-Scape, a multimodal artificial intelligence framework that integrates facial expression analysis with keystroke behavioural features for real-time, non-invasive stress detection using only standard workstation hardware. Our approach combines three transfer-learning CNN architectures, MobileNetV2, EfficientNetB0, and ResNet50V2, with a Random Forest model trained on engineered keystroke features to capture complementary affective and cognitive signatures of stress. Additionally, those trained on 53,571 augmented facial images from seven emotion categories and remapped to binary stressed/not-stressed classifications are utilised in the facial modality. We hypothesise that fusing ambient behavioural cues with facial microexpressions can provide reliable stress estimation comparable to sensor-based systems, while offering improved scalability, privacy preservation, and practical deployment.\\ 
+This research also focuses on the field through the design and implementation of a software-based, privacy-preserving stress detection system that addresses the disadvantages of wearable sensors in terms of cost, comfort, and privacy, while still being deployable on standard workstations. Three transfer learning architectures for facial expression-based stress classification under typical experimental conditions are rigorously compared, with thorough ablation studies and architectural performance analysis. Finally, the study validates the integration of ambient behavioural modalities (typing patterns, application switching, and keystroke errors) as reliable, non-intrusive proxies for occupational stress and cognitive load without the need for explicit cognitive workload measurement. Finally, a deployment-ready multimodal system architecture with latency-optimised real-time processing, local privacy-preserving inference, temporal smoothing (10-frame buffer), and thorough user activity logging with automated screenshot capture is presented. Main contributions are included:\\
+
+\begin{itemize}[noitemsep, topsep=0pt, parsep=0pt, partopsep=0pt]
+    \item Design and validation of a completely software-based, privacy-preserving stress detection system deployable on standard workstations, eliminating wearable sensor disadvantages in cost, comfort, and privacy.
+    \item Rigorous comparison of three transfer learning architectures for facial expression-based stress classification, with comprehensive ablation studies and architectural performance analysis.
+    \item In-depth evaluation of ensemble versus single-decision-tree classifiers for keystroke dynamics-based stress detection on the real public CMU benchmark, including a documented within-subject proxy-labeling methodology, threshold optimisation, and group-aware cross-validation preventing participant data leakage.
+    \item Development of deployment-ready multimodal system architecture with latency-optimised real-time processing (15--30 FPS), local privacy-preserving inference, and temporal smoothing (10-frame buffer).
+\end{itemize}
+
+\section*{Related Work}
+Research in automated stress detection has advanced mainly in three areas: facial affect analysis, behavioural and keystroke-based cognitive load modeling, and multimodal physiological/behavioural fusion systems. Despite notable progress, current methods are still limited by dependence on wearable sensors, laboratory-controlled datasets, privacy-sensitive monitoring techniques, and a lack of generalisation across populations. This section summarises advances in each area and highlights the scientific gaps that the present study aims to address.\\
+Deep learning–based facial analysis has been widely used to infer affective and cognitive states. CNN and transformer-based architectures trained on facial video streams have achieved high performance in emotion classification tasks across various datasets, including FER2013, RAF-DB, and AffectNet. Residual networks and efficient lightweight architectures have been particularly successful in modelling subtle facial muscle activations associated with psychological stress. Multiple studies demonstrate the feasibility of extracting stress-related features from facial expressions. Chew et al. (2022) developed an enhanced MobileNetV2 framework, achieving 95\% stress-recognition accuracy using FER2013 emotion groups mapped to binary stress categories \cite{chew2022}.  
+Kishore et al. (2025), who developed a lightweight CNN model for facial stress analytics suitable for real-time environments \cite{kishore2025}.
+Transformer-based FER models have recently outperformed CNNs in capturing global relationships among facial regions. Yu et al. (2021) introduced TransFER, a transformer-driven emotion recogniser achieving superior cross-dataset generalisation \cite{yu2021}. Kim et al. (2023) leveraged Vision Transformers for AU-based stress inference \cite{kim2023}. 
+Agung et al. (2024) showed that CNNs trained on the Demognition dataset achieve strong performance in emotion modelling relevant to stress \cite{agung2024}.\\
+In the context of keystroke dynamics, this approach offers a non-intrusive behavioural modality for stress detection, grounded in cognitive load theory, which posits that stress disrupts motor coordination and increases typing irregularities. Early keystroke studies focused on user authentication rather than affective inference. Killourhy and Maxion (2009) introduced the CMU Keystroke Benchmark, forming the basis for later stress-analysis research \cite{killourhy2009}. Recent studies have examined typing behaviour under cognitive strain. Rupp et al. (2025) demonstrated that keystroke irregularities during smartphone usage can predict stress using regression models (Frontiers in Psychology, \cite{rupp2025}). Lu et al. (2020) modelled cognitive workload using keystroke timing features with LSTM networks, achieving robust cross-task generalisation \cite{liu2020}.\\
+Multimodal systems generally outperform single-modality approaches by combining physiological, visual, and contextual cues. Jabbooree et al. (2023) fused facial landmarks with biometric signals using 1D-CNN modules, achieving high accuracy but requiring biometric sensors \cite{24jabbooree2023novel}. gupta et al. (2024) released a large-scale multimodal dataset combining EEG, EDA, and facial expressions \cite{25gupta2025}.
+Several fusion strategies, such as early fusion, late fusion, cross-modal attention, and multimodal transformers, have been applied to affective computing. Sun et al. (2020) proposed a multimodal attention network combining audio and visual cues for stress detection \cite{sun2020}. Tripathi et al. (2021) introduced a cross-modal transformer that combines EEG and facial video data (Neural Networks \cite{tripathi2021}. More recently, Wang et al. (2023) demonstrated that multimodal representations enhance robustness against missing modalities through adaptive fusion (Pattern Recognition \cite{wang2023}.\\
+However, nearly all high-performing multimodal systems rely on physiological sensors, which limits their feasibility in naturalistic workplace settings due to privacy concerns, cost, user discomfort, and regulatory restrictions (e.g., GDPR, HIPAA). Very few works explore sensor-free multimodal stress detection, and no existing systems integrate keystroke dynamics with deep facial representations for real-time monitoring of occupational stress.\\
+The present study addresses these gaps by introducing a software-only, privacy-preserving, real-time multimodal framework that fuses deep CNN-based facial micro-expression analysis with engineered keystroke behavioural features. By avoiding physiological sensors and relying solely on ambient digital interactions, the proposed system provides a scalable, low-cost alternative for workplace stress assessment.
+
+
+
+
+\section*{Methodology}
+This section presents a thorough methodological framework for creating and assessing the multimodal stress detection system. We describe the data acquisition and preprocessing pipelines for both facial expression and keystroke dynamics modalities, detail the architectural specifications of three transfer learning-based convolutional neural networks such as MobileNetV2, EfficientNetB0, ResNet50V2 and Random Forest ensemble classifiers, explain the feature engineering strategies for behavioural stress proxies, and outline the training protocols, hyperparameter configurations, and evaluation metrics employed throughout the study, the details of which are described in Figure \ref{fig:framework}. The proposed multimodal AI framework consists of two main parts: the first part is a facial expression recognition module that utilises deep learning, and the second part is a keystroke dynamics analysis module that employs machine learning.
+
+\subsection*{Facial Expression Dataset}
+In this part, we have a training set that includes 40,096 images, while the validation set contains 13,475 images out of a total of 53,571 images in the facial expression dataset. These pictures are categorised into seven emotion groups: anger, contempt, fear, happiness, neutrality, sadness, and surprise. The dataset is a combination of data obtained specifically for this study and the FER2013 public benchmark dataset. Figure \ref{fig:dataset_preview} presents a few representative examples from the dataset. The raw dataset exhibited a significant class imbalance across the seven emotion categories prior to data augmentation, as illustrated in Figure~\ref{fig:original_distribution}. With 5,728 training images, the happy emotion made up the majority class. Disgust was the most severely underrepresented class, with only 578 training samples, resulting in a 7.4× imbalance compared to the majority class.
+
+\begin{figure}[htbp]
+    \centering
+    \includegraphics[width=0.9\linewidth]{all models compariosn/DatasetPreview.png}
+    \caption{Example images from the dataset, showing various facial expressions used for stress detection.}
+    \label{fig:dataset_preview}
+\end{figure}
+
+
+\begin{figure}[htbp]
+    \centering
+    \includegraphics[width=0.9\linewidth]{"all models compariosn/Picture2.png"}
+    \caption{Distribution of facial expression categories in the original dataset, showing the distribution of emotions
+prior to data augmentation.}
+    \label{fig:original_distribution}
+\end{figure}
+
+A methodical augmentation pipeline balanced all emotion classes to the maximum class count (5,728 samples). The following augmentation techniques are used: rotation ($\pm$20$^\circ$), width/height shifts ($\pm$20\% of image dimensions), shear transformation (15$^\circ$ maximum angle), zoom ($\pm$15\% scale variation), horizontal flipping with 50\% probability, and brightness adjustment ($\pm$20\% intensity variation). Figure~\ref{fig:augmented_distribution} demonstrates the balanced distribution after augmentation.
+
+\begin{figure}[htbp]
+    \centering
+    \includegraphics[width=0.9\linewidth]{"all models compariosn/Picture1.png"}
+    \caption{Distribution of facial expression categories in the augmented dataset, after balancing the dataset using augmentation techniques.}
+    \label{fig:augmented_distribution}
+\end{figure}
+
+Binary Stress Mapping:
+\begin{equation}
+ Stressed = \{\text{angry, disgust, fear, sad, neutral}\}, \quad Not Stressed = \{\text{happy, surprise}\}
+\end{equation}
+
+
+\begin{figure}[htbp]
+    \centering
+    \includegraphics[width=1.0\linewidth]{"all models compariosn/unnamed.png"}
+    \caption{The proposed multi-modal stress detection framework, illustrating the workflow from preprocessing of image (Dataset 1) and behavioral CSV data (Dataset 2), through model training and selection (ResNet50V2 and Random Forest), to final deployment in a live stress monitor for real-time prediction and feedback.}
+    \label{fig:framework}
+\end{figure}
+
+\subsection*{Keystroke Dynamics Dataset}
+The CMU Keystroke Dynamics Benchmark dataset \cite{killourhy2009} includes 51 participants who each typed the fixed password \texttt{.tie5Roanl} 400 times across 8 sessions, yielding 20,400 typing repetitions. For each repetition, the dataset records per-keystroke hold time (H, key press to release), down-down latency (DD, this key's press to the next key's press), and up-down/flight latency (UD, this key's release to the next key's press) across the 11 keys of the password. Example feature rows are presented in Table \ref{tab:keystroke_data}.\\
+
+In addition to FER2013 and CMU keystroke dynamics datasets, we created a custom dataset by capturing facial images using a laptop webcam (ASUS TUF F15). For each author participant, 100 images per emotion class were recorded across seven emotion classes (angry, disgust, fear, sad, neutral, happy, and surprise), resulting in 700 images per contributor and 1,400 images total. Images were captured with variations in pose and angle to improve model robustness. All contributors were authors and provided written consent prior to data capture.
+
+\begin{table}[htbp]
+\centering
+\caption{Sample Keystroke Feature Data}
+\label{tab:keystroke_data}
+\begin{tabular}{ccccccc}
+\toprule
+Subject & hold\_mean & hold\_std & flight\_mean & flight\_std & total\_duration & Label \\
+\midrule
+s002 & 0.1158 & 0.0215 & 0.4205 & 0.4668 & 5.4039 & 1 \\
+s002 & 0.1001 & 0.0278 & 0.3314 & 0.3444 & 4.3400 & 1 \\
+s002 & 0.0901 & 0.0135 & 0.2132 & 0.1705 & 3.0396 & 0 \\
+s002 & 0.0842 & 0.0134 & 0.1405 & 0.1581 & 2.2521 & 0 \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+
+
+\subsection*{Keystroke Feature Engineering}
+From each repetition's raw per-key timings we derive five summary features, as a stand-in for cognitive load and stress-induced disruption of motor planning \cite{26sloane2024staying}: \texttt{hold\_mean} and \texttt{hold\_std} (mean and standard deviation of the 11 hold times), \texttt{flight\_mean} and \texttt{flight\_std} (mean and standard deviation of the 11 flight/up-down latencies), and \texttt{total\_duration} (the sum of the 11 down-down latencies, i.e. total elapsed time to type the password). Flight-time variability in particular is indicative of decreased performance consistency during acute stress episodes, increased error generation under cognitive pressure, and attention lapses.\\
+Feature computation, per repetition $i$ with hold times $H_i$, flight times $UD_i$, and down-down latencies $DD_i$:
+\begin{equation}
+\text{hold\_mean}_i = \overline{H_i}, \quad \text{hold\_std}_i = \sigma(H_i), \quad \text{flight\_mean}_i = \overline{UD_i}, \quad \text{flight\_std}_i = \sigma(UD_i), \quad \text{total\_duration}_i = \sum DD_i
+\end{equation}
+
+Stress Label Generation: Since the public CMU dataset contains no stress ground truth, binary labels are derived from \textbf{within-subject relative typing irregularity}. For each participant we compute their personal median \texttt{hold\_std}, \texttt{flight\_std}, and \texttt{total\_duration} across all their repetitions as a baseline, then score each repetition by its proportional deviation from that personal baseline:
+
+\begin{equation}
+\text{score}_i = 0.4\,\Delta\text{hold\_std}_i + 0.4\,\Delta\text{flight\_std}_i + 0.2\,\Delta\text{total\_duration}_i, \quad \Delta x_i = \frac{x_i - \text{baseline}_x}{\text{baseline}_x}
+\end{equation}
+
+\begin{equation}
+Stress Label_i = \begin{cases}
+1 & \text{if score}_i \geq \text{threshold} \\
+0 & \text{otherwise}
+\end{cases}
+\end{equation}
+
+The threshold is the 70th percentile of the score distribution, computed on the training split only, yielding a 30.26\% positive rate. Critically, the classifier is trained only on the five \textit{absolute} per-repetition features above --- it never sees the personal baseline or the relative score used to construct the label, which keeps label construction and model input decoupled. An earlier formulation that thresholded a global (non-subject-relative) z-score of the same features used both as label input and classifier input produced a near-tautological 99\% test accuracy and was discarded for that reason.
+
+\textbf{Feature Statistics after Engineering:}
+Table \ref{tab:keystroke_features} summarises the statistical distribution of the five engineered keystroke features, computed over all 20,400 repetitions. Flight-time features show the largest relative variability, indicating substantial differences in typing rhythm across participants. A negative minimum for \texttt{flight\_mean} is expected and reflects real overlapping keystrokes, where the next key is pressed before the previous one is released -- a well-documented phenomenon in fast typists.
+
+\begin{table}[htbp]
+\centering
+\caption{Keystroke feature statistics (all 20,400 repetitions)}
+\label{tab:keystroke_features}
+\begin{tabular}{lccccc}
+\toprule
+Feature & Mean & Std Dev & Min & Max & Median \\
+\midrule
+hold\_mean & 0.0901 & 0.0210 & 0.0316 & 0.2969 & 0.0886 \\
+hold\_std & 0.0202 & 0.0091 & 0.0027 & 0.5505 & 0.0190 \\
+flight\_mean & 0.1589 & 0.1177 & $-$0.0219 & 3.4940 & 0.1315 \\
+flight\_std & 0.1454 & 0.1190 & 0.0369 & 7.5287 & 0.1167 \\
+total\_duration & 2.4919 & 1.1436 & 1.0222 & 35.9167 & 2.2097 \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\subsection*{Train-Test Split Strategy: Group-Aware Cross-Validation}
+In this section, Table \ref{tab:group-aware_datasplit} shows the group-aware data split used for model training, validation, and testing. The dataset is divided into three parts based on participants, with 60\% of the samples allocated for training, 20\% for validation, and 20\% for testing. This group-aware approach ensures that data from each participant is not mixed across different splits, preventing potential data leakage due to participant-specific typing behaviours \cite{27priego2025multimodal}. Through person-specific pattern overfitting, naive shuffle split without grouping inflates performance estimates by 5--8 percentage points.
+
+
+\begin{table}[htbp]
+\centering
+\caption{Group-aware data split}
+\label{tab:group-aware_datasplit}
+\begin{tabular}{lccc}
+\toprule
+Split & Participant Count & Sample Count & Proportion \\
+\midrule
+Training & 31 & 12,400 & 60.8\% \\
+Validation & 10 & 4,000 & 19.6\% \\
+Test & 10 & 4,000 & 19.6\% \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+
+
+\subsection*{Model Architectures}
+We employed three advanced convolutional neural network architectures for investigating facial expression-based stress detection: MobileNetV2, EfficientNet-B0, and ResNet-50V2. Each component has a different approach to designing systems that strike a balance between processing speed, model size, and classification performance. If we talk about MobileNetV2, it is designed to be lightweight and easy to deploy, utilising depthwise-separable convolutions that enable devices with minimal resources to perform real-time inference. Another component, EfficientNet-B0, employs compound scaling to determine the optimal network depth, width, and resolution for maximum performance. Lastly, ResNet-50V2 utilises deep residual learning with 50 layers and skip connections to capture subtle facial traits associated with stress, thereby enhancing gradient flow. All models utilise transfer learning, leveraging weights that have already been learned on ImageNet. They then undergo a two-phase training process: In Phase 1, the base networks are frozen while custom classification heads are trained; in Phase 2, fine-tuning is performed with reduced learning rates. The following sections provide detailed information on the architecture, training settings, and performance of each model.
+
+\textbf{MobileNetV2: Lightweight Efficiency}: 
+It is an efficient deep learning model optimised for mobile and edge devices. Mainly used inverted residuals and depthwise separable convolutions to lower computational costs while maintaining performance, making it suitable for real-time applications with limited resources  \cite{28lokhande2025object}. the key feature is the linear bottleneck design, which helps reduce parameters and improve efficiency. In our study, by breaking down standard convolutions into lightweight depthwise (per-channel spatial filtering) and pointwise (1×1 cross-channel) operations, MobileNetV2 uses depthwise-separable convolutions to improve computational efficiency. This cuts FLOPs by about 27 times compared to standard convolutions. The design utilises inverted residual blocks with linear bottlenecks, where expanded intermediate representations processed by effective depthwise convolutions are sandwiched between thin input/output layers.
+During Phase 1 training in this study, MobileNetV2 with ImageNet-pretrained weights (224$\times$224$\times$3 input) was used as the frozen base network. There was an additional custom classification head that was described as:\\
+GlobalAveragePooling2D $\rightarrow$ Dense(256) $\rightarrow$ BN $\rightarrow$ Dropout(0.5)\\
+$\rightarrow$ Dense(128) $\rightarrow$ BN $\rightarrow$ Dropout(0.3) $\rightarrow$ Dense(2)
+
+This classification head keeps the model lightweight while enabling effective binary stress prediction. The entire architecture takes up about 14\, MB of storage, has 3.5M parameters (0.3M trainable in Phase 1), and achieves real-time inference at 25- 30 FPS on CPU and 80-100 FPS on GPU, making it appropriate for deployment environments with limited resources. Figure~\ref{fig:mobilenet_performance} shows the training history, and Figure~\ref{fig:mobilenet_confusion} presents the confusion matrix.
+
+\begin{figure}[htbp]
+    \centering
+    \includegraphics[width=0.95\linewidth]{"mobilenetv2/training_history.png"}
+    \caption{Performance of the MobileNetV2 model, evaluated on accuracy, loss, AUC, and precision/recall metrics across training epochs.}
+    \label{fig:mobilenet_performance}
+\end{figure}
+
+\begin{figure}[htbp]
+    \centering
+    \includegraphics[width=0.95\linewidth]{"mobilenetv2/confusion_matrix_roc.png"}
+    \caption{Confusion matrix of the MobileNetV2 model, showing the true positive, true negative, false positive, and false negative values for stress classification.}
+    \label{fig:mobilenet_confusion}
+\end{figure}
+
+\textbf{EfficientNetB0: Compound Scaling}:
+It is a lightweight, highly efficient convolutional neural network designed to strike a balance between accuracy, model size, and computational efficiency \cite{29ali2025fine}. It used a method called compound scaling, which evenly scales the network's depth, width, and resolution to enhance performance. EfficientNetB0 employs a compound scaling approach that simultaneously balances all three dimensions with a single coefficient, rather than scaling network depth, width, and resolution sequentially. ($\phi$). This scaling method ensures proportional growth across dimensions. It also maintains computational efficiency by utilising set constants ($\alpha$, $\beta$, and $\gamma$) determined through a grid search on the baseline model. The architecture consists of 16 stacked layers of MBConv (Mobile Inverted Bottleneck Convolution) blocks with progressive feature dimension expansion. Each block incorporates squeeze-and-excitation (SE) modules for adaptive channel-wise feature recalibration, which are similar to the depthwise separable convolutions used in MobileNetV2. To calculate channel attention weights, SE modules employ global pooling and two fully connected layers. This allows the network to highlight informative features while suppressing less relevant channels. The base network for binary stress classification was EfficientNetB0 with ImageNet-pretrained weights, which was linked to the same custom classification head used for all models. The architecture is positioned as a compromise between the efficiency of MobileNetV2 and the capacity of ResNet50V2. It has 5.3M total parameters, takes up about 21 MB of storage, and achieves inference speeds of 18--22 FPS on CPU.
+
+\begin{equation}
+depth:  d = \alpha^\phi, \quad width:  w = \beta^\phi, \quad resolution:  r = \gamma^\phi
+\end{equation}
+
+$\phi$ represents compound scaling coefficient, and $\alpha$, $\beta$, $\gamma$ determined through grid search. Performance metrics are shown in Figure~\ref{fig:efficientnet_performance} and Figure~\ref{fig:efficientnet_confusion}.
+
+\begin{figure}[htbp]
+    \centering
+    \includegraphics[width=0.95\linewidth]{"efficentnet/training_history.png"}
+    \caption{Performance evaluation of the EfficientNetB0 model, reporting accuracy, loss, AUC, and precision/recall during training and validation.}
+    \label{fig:efficientnet_performance}
+\end{figure}
+
+\begin{figure}[htbp]
+    \centering
+    \includegraphics[width=0.95\linewidth]{"efficentnet/confusion_matrix_roc.png"}
+    \caption{Confusion matrix of the EfficientNetB0 model, depicting the number of correctly and incorrectly classified stress and non-stress instances and ROC curve also.}
+    \label{fig:efficientnet_confusion}
+\end{figure}
+
+\textbf{ResNet50V2: Deep Residual Learning}:
+Despite the network's 50-layer depth, ResNet50V2 utilises residual connections through skip connections, which allow for direct identity mapping, thereby enabling gradients to flow freely during backpropagation. By learning residual functions $F(x) = H(x) - x$ instead of unreferenced mappings $H(x)$, this architecture solves the vanishing gradient issue that arises in very deep networks. The network begins with a 7×7 convolutional layer (stride 2), followed by four residual stages comprising three, four, six, and three bottleneck layers, respectively. Each bottleneck consists of three consecutive convolutions (1$\times$1 $\rightarrow$ 3$\times$3 $\rightarrow$ 1$\times$1) that reduce dimensionality, carry out spatial filtering, and restore dimensions. Compared to the original ResNet architecture, ResNet50V2's unique preactivation design improves gradient flow and training stability by placing batch normalisation and ReLU activation before convolutions (BN$\rightarrow$ReLU$\rightarrow$Conv pattern) instead of after. Global average pooling comes before the previously mentioned custom classification head. The model has the highest capacity architecture of the three assessed models, with 25.6M total parameters, 98MB of storage, and 15--18 FPS inference on CPU.
+
+\textbf{Two-Phase Training Protocol}:
+The same two-phase transfer learning was applied to all three models. In order to allow the custom classification head to adapt pretrained features to binary stress classification without interfering with learnt ImageNet representations \cite{30li2023face}, Phase 1 (30 epochs) froze the ImageNet-pretrained base networks while training only the custom classification head using the Adam optimiser with a learning rate of 0.001, a batch size of 8, and early stopping (patience=5, monitoring validation accuracy). To adapt feature extractors for stress-specific patterns while avoiding catastrophic forgetting, Phase 2 (10 epochs) unfroze all base network layers (the final 50 layers for MobileNetV2, in particular) and carried out end-to-end fine-tuning with a reduced learning rate of 0.0001, batch size of 8, and early stopping (patience = 3). The residual binary class imbalance (2.5:1 stressed-to-not-stressed ratio) was addressed by categorical cross-entropy loss with class weights inversely proportional to class frequency. This resulted in higher penalties for misclassifications of minority not-stressed samples and balanced optimisation across both stress categories. The loss function is Categorical Cross-Entropy with class weights to handle any residual class imbalance.
+
+\begin{equation}
+L = -\sum_{i=1}^{N} w_i \sum_{c=1}^{C} y_{i,c} \log(\hat{y}_{i,c})
+\end{equation}
+
+where $w_i$ is the class weight for sample $i$, $y_{i,c}$ is the true label, and $\hat{y}_{i,c}$ is the predicted probability. Training performance is illustrated in Figure~\ref{fig:resnet_performance} and evaluation results are in Figure~\ref{fig:resnet_confusion}.
+
+\begin{figure}[htbp]
+    \centering
+    \includegraphics[width=0.95\linewidth]{"resnetv2/training_history.png"}
+    \caption{Evaluation of the ResNet50V2 model, including accuracy, loss, AUC, and precision/recall over multiple epochs.}
+    \label{fig:resnet_performance}
+\end{figure}
+
+\begin{figure}[htbp]
+    \centering
+    \includegraphics[width=0.95\linewidth]{"resnetv2/confusion_matrix_roc.png"}
+    \caption{Confusion matrix for ResNet50V2, demonstrating the classification performance in detecting stressed and non-stressed individuals and the ROC curve.}
+    \label{fig:resnet_confusion}
+\end{figure}
+
+\subsection*{Keystroke Model Architectures}
+
+For keystroke dynamics-based stress detection, a random forest ensemble classifier was selected as the primary machine learning algorithm. Unlike facial expression analysis, which needs deep convolutional networks, keystroke behaviour patterns have simpler feature spaces that can work well with traditional machine learning methods. Random Forest has several benefits for this task. It can efficiently manage engineered features such as hold-time and flight-time statistics.  Additionally, it automatically determines the significance of features in order to recognise stress-related behavioural indicators. Additionally, it resists overfitting through ensemble averaging and trains efficiently on smaller datasets.  The hyperparameter settings, feature importance analysis, and threshold optimisation techniques utilised to attain optimal stress classification performance are detailed in the following subsection.
+
+\textbf{Random Forest Classifier setup}:
+The RF Classifier is an ensemble learning method that combines multiple decision trees for improving classification accuracy. This approach reduces overfitting and improves generalisation, making it robust and effective for handling complex, high-dimensional datasets \cite{31ghiasi2021application}.
+Hyperparameter configuration for the Random Forest classifier includes n\_estimators set to 100, max\_depth set to 10, min\_samples\_split set to 5, min\_samples\_leaf set to 2, and random\_state set to 42 for reproducibility. Grid search optimisation was used to select these hyperparameters, aiming to strike a balance between model complexity and generalisation performance.
+
+Feature Importance Ranking: Random Forest uses the mean decrease in Gini impurity to determine feature importance.
+
+\begin{equation}
+I(f) = \sum_{t \in T} p(t) \Delta G(t, f)
+\end{equation}
+
+where $p(t)$ is the proportion of samples reaching node $t$, and $\Delta G(t, f)$ is the Gini impurity decrease from splitting on feature $f$.
+
+Typically: flight\_std (49.77\%) $>$ total\_duration (15.06\%) $>$ flight\_mean (13.52\%) $>$ hold\_std (13.04\%) $>$ hold\_mean (8.61\%)
+
+\subsection*{Threshold Optimization Analysis}
+For optimising the classification assessment, we have fixed the default 0.5 probability threshold and adjusted it by sweeping the threshold parameter (\(\tau\)) in the range [0.1, 0.9] with a step size of 0.05. The prediction rule is defined as: if \( P(\text{stressed}|\boldsymbol{x}) \geq \tau \), the prediction is classified as stressed (1); otherwise, it is classified as not stressed (0). This threshold optimisation helps to balance precision and recall according to application requirements.
+
+\begin{equation}
+\text{For } \tau \in [0.1, 0.9], \text{ step } 0.05
+\end{equation}
+
+\begin{equation}
+\textbf{Prediction}(\tau) = \begin{cases}
+\textbf{1 (Stressed)} & \textbf{if } P(\text{stressed}|\boldsymbol{x}) \geq \tau \\
+\textbf{0 (Not Stressed)} & \textbf{if } P(\text{stressed}|\boldsymbol{x}) < \tau
+\end{cases}
+\end{equation}
+
+\textbf{Metrics Evaluation at Each Threshold}:
+Table \ref{tab:theshold_result} presents the results of threshold optimisation for the stress classification model, evaluated on the validation split and showing how different threshold values (\(\tau\)) affect performance metrics. As the threshold increases, precision improves while recall decreases, reflecting a trade-off between false positives and false negatives. The optimum was $\tau^* = 0.35$ (validation F1 = 0.673), reflecting this dataset's precision/recall trade-off running in the opposite direction from a backspace-based feature set: because flight-time variability is a noisier signal than error rate, a lower threshold that favours recall over precision maximises F1 here. At $\tau^* = 0.35$ on the held-out test set: precision = 0.472, recall = 0.752, F1 = 0.580 -- reported for transparency since validation and test performance diverge somewhat, a real and expected effect of the small 10-subject validation group. Details of our proposed method are illustrated in Algorithm \ref{alg:stress_detection}.
+
+
+\begin{table}[htbp]
+\centering
+\caption{Threshold optimization results (validation split)}
+\label{tab:theshold_result}
+\begin{tabular}{ccccc}
+\toprule
+Threshold & Precision & Recall & F1-Score & Specificity \\
+\midrule
+0.20 & 0.4920 & 0.9190 & 0.6409 & 0.5766 \\
+0.35 ($\tau^*$) & 0.6043 & 0.7585 & 0.6727 & 0.7784 \\
+0.50 & 0.7009 & 0.6078 & 0.6510 & 0.8843 \\
+0.65 & 0.7714 & 0.4976 & 0.6049 & 0.9342 \\
+0.80 & 0.8444 & 0.3387 & 0.4835 & 0.9722 \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\begin{algorithm}[h!]
+\caption{Multimodal Stress Detection Using Facial Expressions and Keystroke Dynamics}
+\label{alg:stress_detection}
+\begin{algorithmic}[1]
+\State \textbf{Input:} Facial expressions \(I_{\text{face}}\), Keystroke dynamics \(x_{\text{keystroke}}\)
+\State \textbf{Output:} Stress classification \( \hat{y} \in \{0, 1\} \)
+
+\State \textbf{Step 1: Preprocessing}
+\State Normalize facial images \( I_{\text{norm}} = \frac{I_{\text{face}} - \mu}{\sigma} \)
+\State Normalize keystroke features \( x_{\text{norm}} = \frac{x - \min(x)}{\max(x) - \min(x)} \)
+
+\State \textbf{Step 2: Facial Expression Modeling}
+\State Extract features using \( f_{\text{face}}(I_{\text{norm}}) \)
+\State Map output to stress label: 
+\[
+\hat{y}_{\text{face}} =
+\begin{cases}
+1, & \text{if negative emotion} \\
+0, & \text{if positive emotion}
+\end{cases}
+\]
+
+\State \textbf{Step 3: Keystroke Dynamics Modeling}
+\State Predict stress with Random Forest \( \hat{y}_{\text{keystroke}} = \text{RF}(x_{\text{keystroke}}) \)
+
+\State \textbf{Step 4: Threshold Optimization}
+\State Sweep threshold \( \tau \in [0.1, 0.9] \) and classify:
+\[
+\hat{y}(\tau) =
+\begin{cases}
+1, & \text{if} \quad P(\text{stressed}|x) \geq \tau \\
+0, & \text{if} \quad P(\text{stressed}|x) < \tau
+\end{cases}
+\]
+
+\State \textbf{Step 5: Multimodal Fusion}
+\State Fuse predictions: \( P_{\text{fusion}} = \alpha P_{\text{face}} + (1 - \alpha) P_{\text{keystroke}} \)
+\State Final classification: 
+\[
+\hat{y}_{\text{final}} =
+\begin{cases}
+1, & \text{if} \quad P_{\text{fusion}} \geq \tau \\
+0, & \text{if} \quad P_{\text{fusion}} < \tau
+\end{cases}
+\]
+
+\State \textbf{Step 6: Temporal Smoothing}
+\State Apply sliding window smoothing: \( \hat{y}_{\text{smoothed}, t} = \text{mode}(\hat{y}_{t-9}, \dots, \hat{y}_t) \)
+
+\State \textbf{Step 7: Real-Time Inference}
+\State Update predictions every 5 seconds.
+
+\State \textbf{Output:} Final stress classification \( \hat{y} \)
+\end{algorithmic}
+\end{algorithm}
+
+
+
+\section*{Results}
+This section presents the evaluation results of the proposed multimodal stress detection framework, including the performance of facial expression and keystroke dynamics models, as well as the optimisation of the decision threshold for classification. All experiments were conducted on a computational infrastructure consisting of an NVIDIA RTX 3050ti GPU with 4GB VRAM for accelerated deep learning training, an Intel Core i7 11th-generation CPU for general processing tasks, 16GB DDR4 RAM for efficient data handling and model loading, and 512GB SSD storage for dataset management and model checkpointing.
+
+\subsection*{Facial Expression Recognition Performance}
+The facial expression recognition model, based on ResNet50V2, achieved an overall accuracy of 89\%, with a precision of 0.95, recall of 0.89, and an AUC-ROC of 0.83. This indicates that the model can reliably classify stress-related facial expressions, with a relatively high true positive rate for identifying individuals who are stressed. Figure~\ref{fig:all_confusion} presents the confusion matrices for all evaluated models.
+
+\begin{figure}[htbp]
+    \centering
+    \includegraphics[width=0.95\linewidth]{"all models compariosn/all_confusion_matrices.png"}
+    \caption{Comparison of confusion matrices for all models (MobileNetV2, EfficientNetB0, ResNet50V2), showing the performance across different stress detection methods.}
+    \label{fig:all_confusion}
+\end{figure}
+
+\begin{table}[htbp]
+\centering
+\caption{Comprehensive Metrics Comparison with Best Scores Highlighted}
+\label{tab:model_comparison}
+\begin{tabular}{lccccc}
+\toprule
+\textbf{Model} & \textbf{Accuracy} & \textbf{Precision} & \textbf{Recall} & \textbf{F1-Score} & \textbf{AUC} \\
+\midrule
+MobileNetV2    & 0.85 & 0.94 & 0.84 & 0.89 & \textbf{0.94} \\
+EfficientNetB0 & 0.81 & 0.94 & 0.78 & 0.85 & 0.75 \\
+ResNet50V2     & \textbf{0.89} & \textbf{0.95} & \textbf{0.89} & \textbf{0.92} & 0.83 \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\subsection*{Keystroke Dynamics Performance}
+Cross-validation analysis across five group-aware folds yielded a mean accuracy of 78.78\% with a standard deviation of $\pm$2.52\%, demonstrating reasonably consistent performance across different subject partitions, with the larger variance (relative to the facial models) reflecting the smaller number of participants (51) compared to the facial dataset's tens of thousands of images. Keystroke flight-time variability -- the consistency of the pause between releasing one key and pressing the next -- is the main behavioural indicator of cognitive load and stress-induced motor disruption, according to feature importance analysis, which showed flight-time standard deviation contributed 49.77\% of the predictive power, followed by total typing duration (15.06\%), flight-time mean (13.52\%), hold-time standard deviation (13.04\%), and hold-time mean (8.61\%). Keystroke analysis is especially useful in multimodal fusion architectures because of this complementary sensitivity profile, which can make up for shortcomings in facial expression recognition.
+
+\begin{figure}[htbp]
+    \centering
+    % TODO: replace this image with StressScape/Facial-stress-prediction/results/Keystroke/confusion_matrix.png
+    \includegraphics[width=0.9\linewidth]{"all models compariosn/WhatsApp Image 2025-11-13 at 11.31.37.png"}
+    \caption{Confusion matrix for the Random Forest classifier applied to keystroke dynamics data (test split, default threshold): 777 true positives, 611 false positives, 2,169 true negatives, and 443 false negatives.}
+    \label{fig:rf_confusion}
+\end{figure}
+
+\subsection*{Real-Time Multimodal Stress Detection System Interface}
+The multimodal stress detection system was implemented as a real-time monitoring tool combining facial and keystroke modalities through weighted fusion. The system interface (Figures~\ref{fig:stress_interface1}, \ref{fig:stress_interface2}, and \ref{fig:stress_interface3}) illustrates a single real-time session pairing facial and keystroke predictions: the facial component uses ResNet50V2 to process video frames at 25--30 frames per second, while the keystroke component continuously extracts hold/flight timing features and queries the trained Random Forest classifier. Both probabilities are combined via weighted fusion ($P_{\text{fusion}} = \alpha P_{\text{face}} + (1-\alpha) P_{\text{keystroke}}$, $\alpha = 0.6$) and updated every five seconds, with the colour-coded confidence visualisation helping users interpret suggested breaks or wellness interventions. This example is illustrative of the interface rather than a benchmarked aggregate result -- a systematic paired evaluation across multiple participants is identified as future work in the Limitations section below.
+
+\begin{figure}[htbp]
+    \centering
+    \includegraphics[width=1.0\linewidth]{"all models compariosn/Screenshot (3).png"}
+    \caption{User interface of the real-time multimodal stress detection system, illustrating a single session combining facial expression and typing stress detection via weighted fusion.}
+    \label{fig:stress_interface1}
+\end{figure}
+
+\begin{figure}[htbp]
+    \centering
+    \includegraphics[width=1.0\linewidth]{"all models compariosn/Screenshot (4).png"}
+    \caption{Close-up view of the real-time stress detection system interface, showing live data analysis of facial stress recognition and typing dynamics.}
+    \label{fig:stress_interface2}
+\end{figure}
+
+\begin{figure}[htbp]
+    \centering
+    \includegraphics[width=1.0\linewidth]{"all models compariosn/Screenshot (5).png"}
+    \caption{Final view of the real-time multimodal stress detection system, displaying the integrated interface and final stress classification results.}
+    \label{fig:stress_interface3}
+\end{figure}
+
+\section*{Discussion}
+
+This section provides the findings of the experimental results. We focused on how well the models perform with both facial expressions and keystroke dynamics. We have compared three effective CNN architectures, along with a random forest classifier, against baseline methods. We analyse confusion matrices to identify classification error patterns and how they affect clinical settings. We also discuss the effectiveness of combining modalities for better stress detection. Additionally, we critically review methodological limitations, including dataset biases and assumptions about the labels for proxies. We compare our approach to related work found in the literature. Finally, we outline the ethical guidelines for installing automated stress monitoring systems in work environments in a responsible manner. A thorough comparison of the model's performance in stress detection using two approaches. For facial expression recognition, we have evaluated all three CNN architectures. Also, focused on accuracy, precision, recall, F1-score, and AUC metrics. We also examine the design aspects that contribute to the improved performance of ResNet50V2. Regarding keystroke dynamics, we compare a Random Forest ensemble classifier with a decision tree baseline. We look at feature importance rankings and investigate the reasons behind the ensemble's superior performance. Lastly, we examine how well data from behavioural and facial methods can be combined. This talk demonstrates how combining various forms of data can enhance the overall capacity to identify stress.
+
+\subsection*{Facial Expression Modality}
+ResNet50V2 had the highest validation accuracy and precision, beating all other assessment metrics except AUC, as shown in Table~\ref{tab:model_comparison}. The high precision means that 95 out of 100 stressed forecasts are correct, which reduces the number of false positive stress warnings that lead to unnecessary workplace interventions. Several factors contribute to better performance. ResNet50V2's residual connections enable deeper gradient flow through 50 layers, allowing it to better capture subtle stress-related traits, such as brow tension, mouth clenching, and eye squinting. The pre-activation architecture (BN$\rightarrow$ReLU$\rightarrow$Conv) facilitates improved gradient flow and more stable training. MobileNetV2 achieved the highest AUC (0.94) among the three architectures and is the most computationally efficient; however, its accuracy (0.85) trails ResNet50V2's (0.89). ResNet50V2's deeper residual design gives it the best overall classification performance despite MobileNetV2's edge in AUC and efficiency. Although it should work better in theory, EfficientNetB0's compound scaling achieves only 81\% accuracy. This suggests that the balanced scaling method may not effectively capture stress-specific features in this binary classification task.
+Furthermore, the idea that cognitive disruption caused by tension mainly appears as inconsistency in keystroke transition timing rather than slower typing speed is supported by the fact that flight-time variability has the highest feature importance at 49.77\% for the keystroke model. This aligns with cognitive load theory, which states that motor-timing errors become more common when working memory is overloaded, leading to decreased attention to motor tasks performance.\\
+In Figure~\ref{fig:all_confusion}, we can see the confusion matrix of model ResNet50V2, evaluated on the full 13,479-sample validation set (3,854 Not Stressed, 9,625 Stressed). The algorithm accurately classified 8,560 stressed individuals as true positives, while incorrectly categorising 466 non-stressed persons as stressed, accounting for 12.09\% of the non-stressed class. It also correctly identified 3,388 non-stressed individuals as true negatives but missed 1,065 stressed individuals, an 11.06\% false negative rate. This pattern indicates the model is reasonably balanced between sensitivity and specificity at the default threshold. By comparison, MobileNetV2 missed 1,578 stressed cases (16.40\% miss rate) on the same evaluation set --- ResNet50V2 actually misses \textit{fewer} stress cases than MobileNetV2, consistent with its higher recall (0.89 vs. 0.84) in Table~\ref{tab:model_comparison}. This suggests ResNet50V2's deeper residual design generalises better across both subtle and pronounced stress-related facial cues, rather than only recognising strong expressions.
+
+\subsection*{Keystroke Dynamics Modality}
+The RF model outperforms the Decision Tree baseline, with a held-out test accuracy of 73.65\% compared to 72.00\% -- a 1.65 percentage point improvement, and a more consistent 78.78\% $\pm$ 2.52\% across 5-fold group-aware cross-validation. Its main advantage comes from ensemble variance reduction: while a single tree is highly sensitive to changes in the training data, averaging results from 100 independently trained trees substantially reduces this sensitivity. Non-linear relationship modelling features RF's piecewise-constant approximation, which captures complex relationships between hold-time, flight-time, and total duration statistics, something a single tree's limited split structure cannot do. Additionally, it offers strong feature handling, such as bootstrap aggregation, which prevents overconfident predictions by automatically calculating out-of-bag errors.
+The claim that keystroke flight-time inconsistency, rather than hold-time or overall speed, is the main sign of stress-related cognitive disruption is supported by the fact that flight-time standard deviation has the highest feature importance at 49.77\%. This finding aligns with cognitive load theory, which suggests that motor-timing errors increase when working memory is overloaded, resulting in reduced attention to motor performance.\\
+Random Forest confusion matrix at the default threshold (0.5), as shown in Figure~\ref{fig:rf_confusion}, reveals 777 true positives representing correctly identified stressed typists, 611 false positives indicating not-stressed individuals flagged, 2,169 true negatives representing correctly identified not-stressed typists, and 443 false negatives indicating missed stressed individuals, on a 4,000-sample held-out test set. At the F1-optimised threshold ($\tau^* = 0.35$, selected on the validation split), the model instead favours recall over precision (0.75 recall vs. 0.47 precision on test), which is preferable when the deployment goal is to minimise missed stress cases even at the cost of more false alarms.
+
+\subsection*{Multimodal Fusion Validity}
+Independent modality performance (89\% facial accuracy, 73.65\% keystroke accuracy at the default threshold) indicates complementary information capture: keystroke dynamics capture cognitive load through behavioural motor effects, while facial expressions reflect affective state through well-studied neuromuscular patterns. The current implementation combines both through weighted fusion ($\alpha = 0.6$) at inference time; a systematic paired evaluation across multiple participants, and comparison against alternative fusion architectures (feature concatenation, late fusion, learned fusion weights), is identified as future work rather than a completed benchmark.
+
+\subsection*{Comparison}
+The Table \ref{tab:related_work_comparison} compares various existing stress detection systems across different modalities, algorithms, and performance metrics. Almeida et al. (2021) utilised ECG and GSR data in conjunction with an LSTM + CNN model, achieving good accuracy, but this required the use of wearable sensors. Kumar et al. (2022) combined video and audio data with a 3D-CNN model, achieving 88.5\% accuracy; however, their system requires both video and audio data. Mao et al. (2023) employed PPG and respiratory rate data with a random forest algorithm, achieving 85.6\% accuracy; however, their system also requires PPG sensors. Liu et al. (2024) combined eye-tracking and facial expressions using RNN + SVM, achieving 86.3\% accuracy but needing an eye-tracking device. Zhang et al. (2023) utilised speech and ECG data with deep learning and CNN, achieving 87.8\% accuracy; however, their system has limited real-time applicability. Lee et al. (2025) employed EEG and eye-tracking techniques, utilising a Transformer and a CNN, to achieve 93.5\% accuracy; however, this approach incurs a high computational cost. Wang et al. (2025) utilised video and audio with BiLSTM, achieving 90.2\% accuracy, but this required specialised equipment. In contrast, the proposed study (2025) combines facial expressions and keystroke dynamics using ResNet50V2 + Random Forest, achieving 89\% and 73.65\% accuracy respectively, without requiring additional hardware, making it a software-only solution. These accuracy figures are drawn from studies using different datasets, sample sizes, modalities, and validation protocols, and are reported here for context rather than as a directly comparable benchmark; only the present study's software-only, sensor-free deployment profile can be compared on a like-for-like basis with the other listed systems.
+
+\subsection*{Critical Limitations and Methodological Concerns}
+With effective demonstration along with good scope, this work identifies several limitations that would be affected its generalizability and practical effectiveness, despite achieving strong classification results. Main concern include demographic biases in training datasets, which restrict cross-population applicability, and the validity of proxy stress labels based on behavioural indicators rather than direct physiological evidence. Additionally, when using frame-independent classification methods neglects temporal dynamics, and models trained on controlled datasets may be encountered domain shift problems in real-world workplace environments. Additionally, the keystroke stress label is a proxy derived from within-subject typing-timing deviation on a public authentication dataset never validated against self-reported or physiological stress -- a limitation shared with the facial modality's emotion-based proxy label, and one that future work should address via the physiological triangulation studies proposed below.
+\begin{table}[htbp]
+\centering
+\caption{Comparison of Existing work in Stress Detection Systems}
+\label{tab:related_work_comparison}
+\begin{tabular}{p{2.5cm}p{2.5cm}p{2cm}p{1.5cm}p{3cm}p{4cm}}
+\toprule
+Study & Modality & Algorithm & Accuracy & Dataset & Limitations \\
+\midrule
+Almeida et al. (2021)~\cite{almeida2021} & ECG + GSR & LSTM + CNN & 92.0\% & PhysioNet, N=100, 2000 samples & Requires wearable sensors \\
+Kumar et al. (2022)~\cite{kumar2022} & Video + Audio & 3D-CNN & 88.5\% & AffectNet, N=150, 5000 samples & Requires video and audio data \\
+Mao et al. (2023)~\cite{mao2023} & PPG + Respiratory Rate & Random Forest & 85.6\% & Biobank, N=50, 1200 samples & Requires PPG sensors \\
+Liu et al. (2024)~\cite{liu2024} & Eye-tracking + Facial & RNN + SVM & 86.3\% & StressSense, N=40, 800 samples & Requires eye-tracking device \\
+Zhang et al. (2023)~\cite{zhang2023} & Speech + ECG & Deep Learning + CNN & 87.8\% & SpeechEmotion, N=75, 1000 samples & Limited real-time application \\
+Lee et al. (2025)~\cite{lee2025} & EEG + Eye-tracking & Transformer + CNN & 93.5\% & RealStress, N=80, 2000 samples & High computational cost \\
+Wang et al. (2025)~\cite{wang2025} & Video + Audio & BiLSTM & 90.2\% & StressTalk, N=70, 1500 samples & Requires specialized video and audio equipment \\
+\textbf{Proposed study (2025)} & \textbf{Facial + Keystroke} & \textbf{ResNet50V2 + RF} & \textbf{89\% / 73.65\%} & \textbf{FER2013 + CMU, 53.5K + 20.4K} & \textbf{Software-only, no hardware} \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\subsection*{Future Directions and Societal Implications}
+
+Systematic research of late, intermediate, and early fusion architectures is necessary for multimodal fusion. Instead of using post-hoc smoothing, temporal deep learning (LSTM/GRU) should explicitly model the evolution of stress. In order to close the gap between controlled and naturalistic environments, domain adaptation strategies (adversarial training, self-supervised learning) should be investigated. Facial/keystroke proxies should be validated against ground-truth markers (cortisol, HRV, EDA) on a variety of populations in physiological triangulation studies. By developing stratified models, fairness-aware machine learning should guarantee equal performance across demographic groups. Through early detection and empowering wellness decisions, this work democratizes stress detection capability to organizations with standard computing devices, potentially reducing burnout. However, there are risks such as algorithmic bias that perpetuates discrimination, misuse for coercive surveillance, and privacy violations. Governance frameworks, clear consent, openness regarding restrictions, and employee input in deployment choices are all necessary for success.
+
+\section*{Conclusion}
+
+This study validates AI frameworks for software-only, privacy-preserving occupational stress detection, demonstrating that facial expression analysis using ResNet50V2 achieves 89\% accuracy with 0.95 precision and 0.83 AUC-ROC, while keystroke dynamics using Random Forest achieves 73.65\% test accuracy (78.78\% $\pm$ 2.52\% across 5-fold group-aware cross-validation), proving the viability of non-invasive stress assessment without wearable sensors. ResNet50V2 offers the best overall performance across accuracy, precision, recall, and F1-score metrics, while MobileNetV2 provides the optimal balance of competitive accuracy with computational efficiency and the highest AUC for deployment suitability. Random Forest validates ensemble approaches by outperforming the decision-tree baseline by 1.65 percentage points, with feature importance analysis identifying keystroke flight-time variability as the strongest behavioural predictor of typing irregularity. All models were trained using publicly available datasets, including the CMU Keystroke Dynamics Benchmark and FER2013 from Kaggle, with the keystroke training pipeline, trained model, and evaluation artefacts included in the project repository. This guarantees their accessibility and reproducibility for both commercial and academic research communities. The multimodal fusion pipeline is implemented and runs in real time; a systematic paired-participant benchmark of the fused system remains future work rather than a completed result. This research contributes to the field of affective computing by demonstrating how AI systems can support mental health challenges in professional settings. It offers a non-invasive, automated approach toward continuous monitoring in workplace environments, pending the workplace field validation and physiological ground-truth studies discussed above. Ultimately, this work reinforces the connections between occupational health, artificial intelligence, and human-computer interaction.
+
+\section*{Data Availability}
+
+The datasets used in this study are publicly available. The FER2013 facial expression dataset is available through Kaggle at \url{https://www.kaggle.com/datasets/msambare/fer2013}. The CMU Keystroke Dynamics Benchmark dataset is available at \url{https://www.cs.cmu.edu/~keystroke/}. All source code, trained models, and experimental configurations are available in the GitHub repository at \url{https://github.com/Sahilsonii/Stress-Scape-Multimodal-AI-Framework-for-Non-Invasive-Stress-Detection}. The keystroke Random Forest model, its training script, and all evaluation artefacts (metrics, confusion matrices, feature-importance analysis) are included in the repository under \texttt{StressScape/Facial-stress-prediction/results/}. In addition to these datasets, we created a custom dataset total 1400 images by capturing facial images using a laptop webcam (ASUS TUF F15).
+
+\section*{Declarations}
+
+\subsection*{Competing Interests}
+The authors declare that they have no competing financial interests or personal relationships that could have appeared to influence the work reported in this study.
+
+\subsection*{Funding}
+This work is supported by the Research Support Fund (RSF) of Symbiosis International (Deemed University), Pune, India.
+
+\subsection*{Ethics Approval and Consent to Participate}
+This study has involved the creation of a small internal dataset consisting of facial images captured from two of our authors (S.S. and V.S.), each contributing 700 images across seven emotion categories. No external participants or patients were recruited. According to institutional policy, self-volunteered data collected exclusively from authors without involving human subjects outside the research team is exempt from formal Institutional Ethics Committee review. All methods were carried out in accordance with relevant guidelines and regulations.
+
+\subsection*{Informed Consent for Image Publication}
+Written informed consent was obtained from all contributing authors for the collection of their facial images and for publication of identifiable images in an online open-access journal. Figures 1, 13 and 14 contain images of author S.S., who has provided full consent for their publication. No images of external individuals are included.
+
+\subsection*{Authors' Contributions}
+S.S. conceived the study, designed the methodology, and implemented the facial expression recognition models. Z.A.A. developed the keystroke dynamics analysis and multimodal fusion framework, supervised the project, provided technical guidance, and coordinated the research activities. W.K. offered validation, guidance on methodology, and contributed to writing the manuscript. K.K.K. handled data collection, experimental design, and reviewed the manuscript. S.J. performed data analysis and contributed to manuscript review. V.S. outlined the methodologies and technical writing of our study. All authors contributed to writing and reviewing the manuscript.
+
+\subsection*{Acknowledgments}
+The authors thank Symbiosis Institute of Technology for providing computational resources and research support.
+
+
+\bibliography{Reference}
+
+\end{document}
